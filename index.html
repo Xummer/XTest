@@ -2,10 +2,19 @@
 <html lang='en'>
   <head>
     <meta charset='utf-8'>
-    <title>Typora Writings</title>
+    <script>
+			function firm() {  
+		    if (confirm("Firm Test")) {
+		      location.href='sandbox://call_native_func/jump_to_orderlist';
+		    } 
+		  }
+		</script>
+    <title>Jump Test</title>
   </head>
   <body>
     <p>
+      <h1 onclick="firm()">Click on this text!</h1>
+      
       <a href='sandbox://call_native_func/jump_to_orderlist'  >ClickTest</a>
     </p>
   </body>
