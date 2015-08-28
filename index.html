@@ -1,24 +1,60 @@
-<!doctype html>
-<html lang='en'>
-  <head>
-    <meta charset='utf-8'>
-    <script>
-    	function firm() {
-    		if (confirm("Firm Test")) {
-    			location.href='sandbox://call_native_func/jump_to_orderlist';
-    		}
-    		else {
-    			location.href='sandbox://call_native_func/alert/5Lit5paHRW5nbGlzaDEyMyEkXlwv';
-    		}
-    	}
-    </script>
-    <title>Jump Test</title>
-  </head>
-  <body>
-    <p>
-      <h1 onclick="firm()">Click on this text!</h1>
-      
-      <a href='sandbox://call_native_func/jump_to_orderlist'  >ClickTest</a>
-    </p>
-  </body>
+<!DOCTYPE html>
+<!-- saved from url=(0062)http://meishi.qq.com/qr/13373091173084?ticket=Kk81jzgBAACoEA5Q -->
+<html lang="zh-CN">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+  <meta charset="utf-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" /> 
+  <title>用safari打开Demo</title>
+ </head> 
+ <body> 
+  <article> 
+   <header></header> 
+   <div id="card"> 
+    <a href="javascript:void(0)" id="openWithSafari">用safari打开</a> 
+    <br /> 
+    <br /> 
+    <br /> 
+    <a href="javascript:void(0)" id="toast">toast Test</a>
+    <br /> 
+    <br /> 
+    <br /> 
+    <a href="javascript:void(0)" id="saveForm">saveForm Test</a>
+    <br /> 
+   </div> 
+  </article> 
+  <script>
+
+var readyFunc = function onBridgeReady() {
+
+    // 绑定关注事件
+  document.querySelector('#openWithSafari').addEventListener('click', function(e){
+        EasylinksJSBridge.invoke('openUrlByExtBrowser',{
+            "url" : "http://www.qq.com",
+        },function(res){
+      });
+    });
+
+  document.querySelector('#toast').addEventListener('click', function(e){
+        EasylinksJSBridge.invoke('toast', '中文Alert', function(res){
+      });
+    });
+
+  document.querySelector('#saveForm').addEventListener('click', function(e){
+        EasylinksJSBridge.invoke('saveForm', 'BlaBlaBla',function(res){
+      });
+    });
+    
+}
+
+
+if (typeof EasylinksJSBridge === "undefined") {
+  document.addEventListener('EasylinksJSBridgeReady', readyFunc, false);
+} else {
+  readyFunc();
+}
+
+
+</script> 
+ </body>
 </html>
