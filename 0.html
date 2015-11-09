@@ -19,7 +19,7 @@
 var readyFunc = function onBridgeReady() {
     // 绑定关注事件
   document.querySelector('#getLocation').addEventListener('click', function(e){
-        bridge.callHandler('getLocation',function(res){
+        WebViewJavascriptBridge.callHandler('getLocation', '', function(res){
          alert(res);
       });
     });
