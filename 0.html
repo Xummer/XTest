@@ -13,9 +13,18 @@
    <div id="card"> 
     <a href="javascript:void(0)" id="getLocation">getLocation test</a> 
     <br /> 
+    <br />
+    <br />
+    <input type="button" onclick="display_alert()"
+value="Display alert box" />
    </div> 
   </article> 
   <script>
+function display_alert()
+  {
+  alert("I am an alert box!!")
+  }
+
 var readyFunc = function onBridgeReady() {
     // 绑定关注事件
   document.querySelector('#getLocation').addEventListener('click', function(e){
