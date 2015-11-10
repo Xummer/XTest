@@ -27,6 +27,12 @@ function display_alert()
 
 var readyFunc = function onBridgeReady() {
   alert('readyFunc')
+  WebViewJavascriptBridge.init(function(message, responseCallback) {
+        alert('Received message: ' + message)   
+        if (responseCallback) {
+            responseCallback("Right back atcha")
+        }
+  })
     // 绑定关注事件
   document.querySelector('#getLocation').addEventListener('click', function(e) {
       WebViewJavascriptBridge.callHandler('getLocation', '0', function(r) {
