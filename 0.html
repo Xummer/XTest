@@ -28,10 +28,9 @@ function display_alert()
 var readyFunc = function onBridgeReady() {
   alert('readyFunc')
     // 绑定关注事件
-  document.querySelector('#getLocation').addEventListener('click', function(e){
-      window.WebViewJavascriptBridge.callHandler('getLocation', '123', function(res){
-         log(res)
-         alert(res)
+  document.querySelector('#getLocation').addEventListener('click', function(e) {
+      window.WebViewJavascriptBridge.callHandler('getLocation', function(r) {
+         alert(r)
       })
   })
 }
