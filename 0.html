@@ -28,10 +28,11 @@ function display_alert()
 var readyFunc = function onBridgeReady() {
     // 绑定关注事件
   document.querySelector('#getLocation').addEventListener('click', function(e){
-        WebViewJavascriptBridge.callHandler('getLocation', {'foo': 'bar'}, function(res){
-         log(res);
-      });
-    });
+      window.WebViewJavascriptBridge.callHandler('getLocation', '123', function(res){
+         log(res)
+         alert(res)
+      })
+  })
 }
 if (typeof WebViewJavascriptBridge === "undefined") {
   document.addEventListener('WebViewJavascriptBridgeReady', readyFunc, false);
