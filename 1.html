@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)http://meishi.qq.com/qr/13373091173084?ticket=Kk81jzgBAACoEA5Q -->
+<html lang="zh-CN">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+  <meta charset="utf-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" /> 
+  <title>用safari打开Demo</title>
+ </head> 
+ <body> 
+  <article> 
+   <header></header> 
+   <div id="card"> 
+    <a href="javascript:void(0)" id="getLocation">getLocation test</a> 
+    <br /> 
+    <br />
+    <br />
+    <input type="button" onclick="display_alert()"
+value="Display alert box" />
+   </div> 
+  </article> 
+  <script>
+function display_alert()
+  {
+  alert("I am an alert box!!")
+  }
+var readyFunc = function onBridgeReady() {
+  alert('readyFunc')
+  
+    // 绑定关注事件
+  document.querySelector('#getLocation').addEventListener('click', function(e) {
+      WebViewJavascriptBridge.callHandler('getLocation', '0', function(r) {
+         alert(r)
+      })
+  })
+}
+if (typeof WebViewJavascriptBridge === "undefined") {
+  document.addEventListener('WebViewJavascriptBridgeReady', readyFunc, false);
+} else {
+  readyFunc();
+}
+</script> 
+ </body>
+</html>
