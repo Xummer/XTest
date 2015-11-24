@@ -32,7 +32,9 @@ var readyFunc = function onBridgeReady() {
 			else { log.appendChild(el) }
 		}
 		
-		log('init', "23333")
+		var responseData = { 'Javascript Says':'Right back atcha!' }
+		log('init', responseData)
+		
 		WebViewJavascriptBridge.init(function(message, responseCallback) {
 			log('JS got a message', message)
 			var data = { 'Javascript Responds':'Wee!' }
