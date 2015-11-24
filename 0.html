@@ -32,7 +32,7 @@ var readyFunc = function onBridgeReady() {
 			else { log.appendChild(el) }
 		}
 		
-		log('init')
+		log('init', "23333")
 		WebViewJavascriptBridge.init(function(message, responseCallback) {
 			log('JS got a message', message)
 			var data = { 'Javascript Responds':'Wee!' }
@@ -42,7 +42,7 @@ var readyFunc = function onBridgeReady() {
     // 绑定关注事件
   document.querySelector('#getLocation').addEventListener('click', function(e) {
       WebViewJavascriptBridge.callHandler('getLocation', '0', function(r) {
-      	log(r)
+      	log("a", r)
          alert(r)
       })
   })
