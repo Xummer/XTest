@@ -45,6 +45,7 @@ var readyFunc = function onBridgeReady() {
 		})
     // 绑定关注事件
   document.querySelector('#getLocation').addEventListener('click', function(e) {
+  	log("getLocation", responseData)
       WebViewJavascriptBridge.callHandler('getLocation', '0', function(r) {
       	log("a", r)
          alert(r)
