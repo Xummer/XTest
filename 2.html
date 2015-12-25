@@ -11,14 +11,14 @@
   <article> 
    <header></header> 
    <div id="card"> 
-    <a href="javascript:void(0)" id="payFoodOrder">payFoodOrder test</a> 
+    <a href="javascript:void(0)" id="payForFood">payForFood test</a> 
    </div> 
   </article> 
   <script>
 var readyFunc = function onBridgeReady() {
     // 绑定关注事件
-  document.querySelector('#payFoodOrder').addEventListener('click', function(e) {
-      WebViewJavascriptBridge.callHandler('payFoodOrder', {"subject":"food","order_no":"F123456789","amount":200,"channel":"alipay"}, function(r) {
+  document.querySelector('#payForFood').addEventListener('click', function(e) {
+      WebViewJavascriptBridge.callHandler('payForFood', {"subject":"food","order_no":"F123456789","amount":200,"channel":"alipay"}, function(r) {
          alert(r)
       })
   })
