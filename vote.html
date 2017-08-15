@@ -5,4 +5,12 @@
 <body>
       <div id="html_1"><iframe align="center" width="950" height="170" src="http://www.juvefan.cn/advanced/frontend/web/index.php?r=toupiao%2Fwx&id=3" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no"></iframe></div>
 </body>
+<script type="text/javascript">
+    // document.onclick = function(){
+    window.onload = function(){
+        var myIframe = document.getElementById("html_1").contentWindow
+                               .document.querySelector("script").innerText;
+        alert(myIframe)   
+    }
+</script>
 </html>
