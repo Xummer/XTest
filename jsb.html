@@ -34,6 +34,7 @@ setupWebViewJavascriptBridge(function(bridge) {
   document.querySelector('#openWithSafari').addEventListener('click', function(e){
         bridge.callHandler('getNetworkType',{},function(res){
             alert(res);
+		alert("2333");
       });
     });
 })
