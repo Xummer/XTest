@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)http://meishi.qq.com/qr/13373091173084?ticket=Kk81jzgBAACoEA5Q -->
+<html lang="zh-CN">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+  <meta charset="utf-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" /> 
+  <title>用safari打开Demo</title>
+ </head> 
+ <body> 
+  <article> 
+   <header></header> 
+   <div id="card"> 
+    <a href="javascript:void(0)" id="openWithSafari">用safari打开</a> 
+    <br /> 
+    <br /> 
+    <br /> 
+    <a href="javascript:void(0)" id="toast">toast Test</a>
+    <br /> 
+    <br /> 
+    <br /> 
+    <a href="javascript:void(0)" id="saveForm">saveForm Test</a>
+    <br /> 
+   </div> 
+  </article> 
+  <script>
+var readyFunc = function onBridgeReady(bridge) {
+    // 绑定关注事件
+  document.querySelector('#openWithSafari').addEventListener('click', function(e){
+        bridge.callHandler('openUrlByExtBrowser',{
+            "url" : "http://www.qq.com",
+        },function(res){
+      });
+    });
+  document.querySelector('#toast').addEventListener('click', function(e){
+        bridge.callHandler('toast', '中文Alert', function(res){
+      });
+    });
+  document.querySelector('#saveForm').addEventListener('click', function(e){
+        bridge.callHandler('saveForm', 'BlaBlaBla',function(res){
+      });
+    });
+    
+}
+
+function setupWebViewJavascriptBridge(callback) {
+	if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
+	if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
+	window.WVJBCallbacks = [callback];
+	var WVJBIframe = document.createElement('iframe');
+	WVJBIframe.style.display = 'none';
+	WVJBIframe.src = 'https://__bridge_loaded__';
+	document.documentElement.appendChild(WVJBIframe);
+	setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
+}
+
+setupWebViewJavascriptBridge(readyFunc)
+
+</script> 
+ </body>
+</html>
