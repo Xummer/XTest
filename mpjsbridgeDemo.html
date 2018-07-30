@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+  <meta charset="utf-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" /> 
+  <title>MPJSBridgeHtmlDemo</title>
+ </head> 
+ <body> 
+  <article> 
+   <header></header> 
+   <div id="card"> 
+    <a href="javascript:void(0)" id="openWithSafari">用safari打开</a> 
+    <br /> 
+    <br /> 
+    <br /> 
+    <a href="javascript:void(0)" id="toast">toast Test</a>
+    <br /> 
+    <br /> 
+    <br /> 
+    <a href="javascript:void(0)" id="saveForm">saveForm Test</a>
+    <br /> 
+   </div> 
+  </article> 
+  <script>
+var readyFunc = function onBridgeReady() {
+    // 绑定关注事件
+  document.querySelector('#openWithSafari').addEventListener('click', function(e){
+        MPJSBridge.invoke('openUrlByExtBrowser',{
+            "url" : "http://www.qq.com",
+        },function(res){
+      });
+    });
+  document.querySelector('#toast').addEventListener('click', function(e){
+        MPJSBridge.invoke('toast', '中文Alert', function(res){
+      });
+    });
+  document.querySelector('#saveForm').addEventListener('click', function(e){
+        MPJSBridge.invoke('saveForm', 'BlaBlaBla',function(res){
+      });
+    });
+    
+}
+if (typeof MPJSBridge === "undefined") {
+  document.addEventListener('MPJSBridgeReady', readyFunc, false);
+} else {
+  readyFunc();
+}
+</script> 
+ </body>
+</html>
