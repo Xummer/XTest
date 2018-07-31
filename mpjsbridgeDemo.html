@@ -29,15 +29,15 @@ var readyFunc = function onBridgeReady() {
         MPJSBridge.invoke('openUrlByExtBrowser',{
             "url" : "http://www.qq.com",
         },function(res){
+         MPJSBridge.log(res);
       });
     });
   document.querySelector('#toast').addEventListener('click', function(e){
         MPJSBridge.invoke('toast', '中文Alert', function(res){
       });
     });
-  document.querySelector('#saveForm').addEventListener('click', function(e){
-        MPJSBridge.invoke('saveForm', 'BlaBlaBla',function(res){
-      });
+  document.querySelector('#Log').addEventListener('click', function(e){
+        MPJSBridge.log('BlaBlaBla');
     });
     
 }
