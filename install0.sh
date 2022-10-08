@@ -1,3 +1,0 @@
-#!/bin/bash
-
-curl -O  "https://objects.githubusercontent.com/github-production-release-asset-2e65be/451548409/e92fc659-9818-44a3-8482-6c192948640b?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20221008%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221008T111252Z&X-Amz-Expires=300&X-Amz-Signature=35cd674c0588516cde6f2489f8973fb674563cf26f25f5467244a56a2de4a6e7&X-Amz-SignedHeaders=host&actor_id=2180976&key_id=0&repo_id=451548409&response-content-disposition=attachment%3B%20filename%3Darch-linux-clockworkpi-a06-root-fs.tar.xz&response-content-type=application%2Foctet-stream"
