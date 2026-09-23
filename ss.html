@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>截图监听</title>
+  <style>
+    :root {
+      --bg: #f6f7f8;
+      --card: #fff;
+      --text: #18191c;
+      --sub: #9499a0;
+      --pink: #fb7299;
+      --line: #e3e5e7;
+      --ok: #2ab27b;
+      --bad: #f25d5d;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #17181a;
+        --card: #232427;
+        --text: #e3e5e7;
+        --sub: #757a81;
+        --line: #2f3134;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
+      min-height: 100vh;
+    }
+    .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    h1 { font-size: 18px; margin-bottom: 8px; }
+    .status { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--sub); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sub); flex: none; }
+    .dot.ok { background: var(--ok); }
+    .dot.bad { background: var(--bad); }
+    .count { font-size: 40px; font-weight: 600; color: var(--pink); margin-top: 12px; }
+    .count small { font-size: 14px; color: var(--sub); font-weight: normal; margin-left: 4px; }
+    .log-title { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
+    .log-title button { border: 0; background: none; color: var(--pink); font-size: 14px; }
+    #log { font: 12px/1.6 ui-monospace, Menlo, monospace; color: var(--sub); word-break: break-all; white-space: pre-wrap; max-height: 40vh; overflow-y: auto; }
+    #log div { border-bottom: 1px dashed var(--line); padding: 4px 0; }
+
+    /* 弹窗 */
+    .mask {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      display: flex; align-items: center; justify-content: center; padding: 32px;
+      opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 10;
+    }
+    .mask.show { opacity: 1; pointer-events: auto; }
+    .dialog {
+      width: 100%; max-width: 300px; background: var(--card); border-radius: 12px; overflow: hidden;
+      transform: scale(.9); transition: transform .2s; text-align: center;
+    }
+    .mask.show .dialog { transform: scale(1); }
+    .dialog .body { padding: 24px 20px 20px; }
+    .dialog h2 { font-size: 17px; margin-bottom: 8px; }
+    .dialog p { font-size: 14px; color: var(--sub); line-height: 1.5; }
+    .dialog button {
+      width: 100%; height: 48px; border: 0; border-top: 1px solid var(--line);
+      background: none; color: var(--pink); font-size: 16px; font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>截图监听</h1>
+    <div class="status"><span class="dot" id="dot"></span><span id="status">初始化中…</span></div>
+    <div class="count"><span id="count">0</span><small>次截图</small></div>
+  </div>
+
+  <div class="card">
+    <div class="log-title"><span>回调日志</span><button id="clear">清空</button></div>
+    <div id="log"></div>
+  </div>
+
+  <div class="mask" id="mask">
+    <div class="dialog">
+      <div class="body">
+        <h2>检测到截图</h2>
+        <p id="msg">你刚刚截了一张图</p>
+      </div>
+      <button id="close">知道了</button>
+    </div>
+  </div>
+
+  <script src="https://s1.hdslb.com/bfs/seed/jinkela/short/jsb/js-bridge.min.js"></script>
+  <script>
+    (function () {
+      var METHOD = 'ability.observeScreenshot';
+      var $ = function (id) { return document.getElementById(id); };
+      var count = 0;
+
+      function setStatus(text, state) {
+        $('status').textContent = text;
+        $('dot').className = 'dot' + (state ? ' ' + state : '');
+      }
+
+      function log(label, data) {
+        var line = document.createElement('div');
+        var time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+        line.textContent = '[' + time + '] ' + label + (data === undefined ? '' : ' ' + JSON.stringify(data));
+        $('log').prepend(line);
+      }
+
+      function showDialog() {
+        count++;
+        $('count').textContent = count;
+        $('msg').textContent = '这是第 ' + count + ' 次截图';
+        $('mask').classList.add('show');
+      }
+
+      $('close').onclick = function () { $('mask').classList.remove('show'); };
+      $('clear').onclick = function () { $('log').innerHTML = ''; };
+
+      var jsb = window.JsBridge;
+      if (!jsb || !jsb.inBiliApp) {
+        setStatus('非哔哩哔哩 App 环境，无法监听截图', 'bad');
+        return;
+      }
+
+      var bridge = jsb.biliBridge;
+      jsb.initPromise.then(function () {
+        return bridge.isSupport(METHOD);
+      }).then(function (supported) {
+        if (!supported) {
+          setStatus('当前 App 版本不支持 ' + METHOD, 'bad');
+          return;
+        }
+        // v1 通道的 callback 不会在首次触发后移除，Native 每次截图都会回调
+        bridge.callNative({
+          method: METHOD,
+          data: {},
+          callback: function (res) {
+            log('callback', res);
+            showDialog();
+          }
+        });
+        setStatus('监听中，试试截个图', 'ok');
+      }).catch(function (err) {
+        setStatus('JSBridge 初始化失败', 'bad');
+        log('error', String(err));
+      });
+    })();
+  </script>
+</body>
+</html>
