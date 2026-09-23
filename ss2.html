@@ -93,6 +93,7 @@
   <script>
     (function () {
       var METHOD = 'ability.observeScreenshot';
+      var TIMEOUT = 3000;
       var $ = function (id) { return document.getElementById(id); };
       var count = 0;
 
@@ -104,7 +105,11 @@
       function log(label, data) {
         var line = document.createElement('div');
         var time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
-        line.textContent = '[' + time + '] ' + label + (data === undefined ? '' : ' ' + JSON.stringify(data));
+        var body = '';
+        if (data !== undefined) {
+          try { body = ' ' + JSON.stringify(data); } catch (e) { body = ' ' + String(data); }
+        }
+        line.textContent = '[' + time + '] ' + label + body;
         $('log').prepend(line);
       }
 
@@ -115,37 +120,104 @@
         $('mask').classList.add('show');
       }
 
+      // SDK 在通道缺失时部分 Promise 永远不 settle，统一加超时
+      function withTimeout(promise, name, ms) {
+        return new Promise(function (resolve, reject) {
+          var timer = setTimeout(function () { reject(new Error(name + ' 超时')); }, ms || TIMEOUT);
+          promise.then(function (v) { clearTimeout(timer); resolve(v); },
+                       function (e) { clearTimeout(timer); reject(e); });
+        });
+      }
+
+      function dumpEnv() {
+        var wk = window.webkit && window.webkit.messageHandlers;
+        var st = window.BiliJsBridge || {};
+        log('UA', navigator.userAgent);
+        log('env', {
+          biliInject: !!(window.biliInject || (wk && wk.biliInject)),
+          biliInjectV2: !!(window.biliInjectV2 || (wk && wk.biliInjectV2)),
+          inited: st.inited,
+          noBiliInject: st.noBiliInject,
+          jsbV2Inited: st.jsbV2Inited,
+          noBiliInjectV2: st.noBiliInjectV2,
+          v2ApiCount: (st.jsbV2ApiList || []).length,
+          v2HasMethod: (st.jsbV2ApiList || []).indexOf(METHOD) > -1
+        });
+      }
+
       $('close').onclick = function () { $('mask').classList.remove('show'); };
       $('clear').onclick = function () { $('log').innerHTML = ''; };
 
       var jsb = window.JsBridge;
-      if (!jsb || !jsb.inBiliApp) {
+      if (!jsb) {
+        setStatus('js-bridge.min.js 加载失败', 'bad');
+        return;
+      }
+      if (!jsb.inBiliApp) {
         setStatus('非哔哩哔哩 App 环境，无法监听截图', 'bad');
+        log('UA', navigator.userAgent);
         return;
       }
 
       var bridge = jsb.biliBridge;
-      jsb.initPromise.then(function () {
-        return bridge.isSupport(METHOD);
-      }).then(function (supported) {
-        if (!supported) {
-          setStatus('当前 App 版本不支持 ' + METHOD, 'bad');
-          return;
-        }
-        // v1 通道的 callback 不会在首次触发后移除，Native 每次截图都会回调
+
+      // V1 通道：callback 常驻，Native 每次截图都能回调
+      function observeV1() {
         bridge.callNative({
           method: METHOD,
           data: {},
           callback: function (res) {
-            log('callback', res);
+            log('v1 callback', res);
             showDialog();
           }
         });
-        setStatus('监听中，试试截个图', 'ok');
-      }).catch(function (err) {
-        setStatus('JSBridge 初始化失败', 'bad');
-        log('error', String(err));
-      });
+        setStatus('监听中（V1），试试截个图', 'ok');
+      }
+
+      // V2 通道：SDK 会在首次回调后移除 callback，所以每次回调后重新注册；
+      // 若 Native 注册即回调（ack），短时间内连续回调会被熔断，避免死循环
+      var recent = [];
+      function observeV2() {
+        bridge.useNative(METHOD, {}).then(function (res) {
+          log('v2 callback', res);
+          var now = Date.now();
+          recent = recent.filter(function (t) { return now - t < 2000; });
+          recent.push(now);
+          if (recent.length > 3) {
+            setStatus('V2 回调过于频繁，已停止重新注册，请看日志', 'bad');
+            return;
+          }
+          showDialog();
+          observeV2();
+        }, function (err) {
+          log('v2 error', err);
+          setStatus('V2 调用失败，请看日志', 'bad');
+        });
+        setStatus('监听中（V2），试试截个图', 'ok');
+      }
+
+      setStatus('等待 JSBridge 初始化…');
+      withTimeout(jsb.initPromise || Promise.resolve(), 'initPromise', 6000)
+        .catch(function (e) { log('warn', e.message); })
+        .then(function () {
+          dumpEnv();
+          setStatus('检测 V1 支持…');
+          return withTimeout(bridge.isSupport(METHOD), 'isSupport(V1)')
+            .catch(function (e) { log('warn', e.message); return false; });
+        })
+        .then(function (v1) {
+          log('isSupport(V1)', v1);
+          if (v1) return observeV1();
+          setStatus('检测 V2 支持…');
+          return withTimeout(bridge.canIUse(METHOD), 'canIUse(V2)')
+            .catch(function (e) { log('warn', e.message); return false; })
+            .then(function (v2) {
+              log('canIUse(V2)', v2);
+              if (v2) return observeV2();
+              dumpEnv();
+              setStatus('V1 / V2 均不支持 ' + METHOD + '，请看日志', 'bad');
+            });
+        });
     })();
   </script>
 </body>
