@@ -196,17 +196,40 @@
         setStatus('监听中（V2），试试截个图', 'ok');
       }
 
+      function checkV1() {
+        return withTimeout(bridge.isSupport(METHOD), 'isSupport(V1)')
+          .catch(function (e) { log('warn', e.message); return false; })
+          .then(function (ok) {
+            var apis = (window.BiliJsBridge || {}).appSupportApis || [];
+            log('isSupport(V1)', ok);
+            log('ability.* (' + apis.length + ' total)', apis.filter(function (m) { return m.indexOf('ability.') === 0; }));
+            return ok;
+          });
+      }
+
+      // 参考页的「添加 namespace」：global.import 之后该 namespace 的方法才进支持列表
+      function importNamespace(ns) {
+        return withTimeout(new Promise(function (resolve) {
+          bridge.callNative({ method: 'global.import', data: { namespace: ns }, callback: resolve });
+        }), 'global.import(' + ns + ')')
+          .then(function (res) { log('global.import(' + ns + ')', res); })
+          .catch(function (e) { log('warn', e.message); });
+      }
+
       setStatus('等待 JSBridge 初始化…');
       withTimeout(jsb.initPromise || Promise.resolve(), 'initPromise', 6000)
         .catch(function (e) { log('warn', e.message); })
         .then(function () {
           dumpEnv();
           setStatus('检测 V1 支持…');
-          return withTimeout(bridge.isSupport(METHOD), 'isSupport(V1)')
-            .catch(function (e) { log('warn', e.message); return false; });
+          return checkV1();
         })
         .then(function (v1) {
-          log('isSupport(V1)', v1);
+          if (v1) return true;
+          setStatus('导入 ability namespace…');
+          return importNamespace(METHOD.split('.')[0]).then(checkV1);
+        })
+        .then(function (v1) {
           if (v1) return observeV1();
           setStatus('检测 V2 支持…');
           return withTimeout(bridge.canIUse(METHOD), 'canIUse(V2)')
@@ -214,8 +237,9 @@
             .then(function (v2) {
               log('canIUse(V2)', v2);
               if (v2) return observeV2();
-              dumpEnv();
-              setStatus('V1 / V2 均不支持 ' + METHOD + '，请看日志', 'bad');
+              // 支持列表只是 SDK 侧的门槛，callNative 本身不校验，直接注册试试
+              observeV1();
+              setStatus('支持列表中没有 ' + METHOD + '，已强制注册，试试截图', 'bad');
             });
         });
     })();
